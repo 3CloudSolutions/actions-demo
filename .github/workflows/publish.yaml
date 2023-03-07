@@ -1,0 +1,33 @@
+name: Publish Package
+on:
+  release:
+    types: [ created ]
+  workflow_dispatch:
+jobs:
+  build:
+    uses: ./.github/workflows/build.yaml
+    secrets: inherit
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Docs
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          keep_files: true
+      - run: npm publish --access=public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.6
+        with:
+          nuget-version: '6.x'
+      - name: Pack NuGet
+        working-directory: ./src/nuget
+        run: |
+          nuget pack my-package.nuspec -Verbosity detailed -NonInteractive -NoPackageAnalysis
+      - name: Push Nuget
+        working-directory: ./src/nuget
+        run: |
+          nuget push my-package.*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey ${{ secrets.NUGET_API_KEY }}
