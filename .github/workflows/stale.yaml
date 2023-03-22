@@ -14,3 +14,5 @@ jobs:
           days-before-stale: 1
           days-before-close: 2
           any-of-labels: 'State: Waiting feedback'
+          stale-issue-label: 'State: Stale'
+          stale-pr-label: 'State: Stale'
